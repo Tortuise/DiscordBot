@@ -91,5 +91,17 @@ class music_cog(commands.Cog):
         if self.vc != "":
             self.vc.stop()
             await self.play_music(ctx)
-    
+            
+    @commands.command(name="leave", aliases=["disconnect", "l", "dc"], help="Kick the bot from VC")
+    async def dc(self, ctx):
+        self.isplaying = False
+        self.ispaused = False
+        await self.vc.disconnect()
+
+    @commands.command(name="clear", aliases=["c", "bin"], help="Stops the music and clears the queue")
+    async def clear(self, ctx):
+        if self.vc != None and self.isplaying:
+            self.vc.stop()
+        self.music_queue = []
+        await ctx.send("Music queue cleared")
 
