@@ -3,6 +3,7 @@ from discord.ext import commands
 import isodate
 from ast import alias
 from youtube_dl import YoutubeDL
+from googleapiclient.discovery import build
 
 class music_cog(commands.Cog):
     def __init__(self, bot):
@@ -91,7 +92,7 @@ class music_cog(commands.Cog):
         if self.vc != "":
             self.vc.stop()
             await self.play_music(ctx)
-            
+
     @commands.command(name="leave", aliases=["disconnect", "l", "dc"], help="Kick the bot from VC")
     async def dc(self, ctx):
         self.isplaying = False
@@ -105,3 +106,33 @@ class music_cog(commands.Cog):
         self.music_queue = []
         await ctx.send("Music queue cleared")
 
+    async def yt_search(self, query):
+        api_key = ""
+        with open("api_key.txt") as f:
+            api_key = f.read() 
+        youtube = build('youtube','v3',developerKey = api_key)
+        request = youtube.search().list(q=query,part='id',type='video', maxResults=5) 
+        response = request.execute()
+        ids = []
+        
+        for id in response['items']:
+            vidId = id['id']['videoId']
+            ids.append(vidId) 
+
+        id_str = ','.join(ids)
+        
+        req = youtube.videos().list(
+                part="snippet,contentDetails",
+                id=id_str
+            )
+        res = req.execute()
+        vids = []
+        index = 0
+
+        for item in res['items']:
+            duration = str(isodate.parse_duration(item['contentDetails']['duration']))
+            title = str(index+1) + ". " + item['snippet']['title']
+            vids += [{'source': item['id'], 'title': title, 'description': duration}]
+            index += 1
+        
+        return vids
