@@ -4,6 +4,7 @@ import isodate
 from ast import alias
 from youtube_dl import YoutubeDL
 from googleapiclient.discovery import build
+from DropDownComponents import musicDropdownView
 
 class music_cog(commands.Cog):
     def __init__(self, bot):
@@ -136,3 +137,47 @@ class music_cog(commands.Cog):
             index += 1
         
         return vids
+
+    @commands.command(name="search",aliases=["f"], help="list search `search <query>`")
+    async def list(self, ctx, *args): 
+        query = " ".join(args)
+
+        vc = ctx.author.voice.channel
+        if vc is None:
+            await ctx.send("Connect to voice channel")
+        else:
+            # info = await self.search_list(query)
+            info = await self.yt_search(query)
+            options = []
+
+            if type(info) == type(True):
+                await ctx.send("Could not download song")
+            
+            for i in info:
+                description = i['description']
+                options.append(discord.SelectOption(label=i['title'], description=description))
+
+            view=musicDropdownView(options=options)
+            msg = await ctx.send("Pick a song", view=view)
+
+            await view.wait()
+
+            if view.index > (-1):
+                await ctx.send(f"**{info[view.index]['title']}** added to the queue")
+                await msg.delete()
+
+                url = info[view.index]['source']
+                song = self.search(url)
+                self.music_queue.append([song, vc])
+
+                if self.isplaying == False:
+                    await self.play_music(ctx)
+
+            else:
+                await msg.delete()
+
+    @commands.command(name="bruh",aliases=["b"], help="Plays 💀")
+    async def bruh(self, ctx):
+        query = 'https://www.youtube.com/watch?v=TApmI8YtYhc'
+
+        await self.music_template(ctx, query)

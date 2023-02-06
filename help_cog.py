@@ -14,6 +14,6 @@ class help_cog(commands.Cog):
         if not self.help_message:
             for cmd in cmds:
                 aliases = ", ".join(cmd.aliases)
-                self.help_message += f'{cmd.name}, {aliases} - {cmd.help}\n'
+                self.help_message += f'{cmd.name}, {aliases} - {cmd.help}\n\n'
         embed=discord.Embed(title=f"Commands prefix with ```{self.prefix}```", description=self.help_message, color=0x00ff00)
         await ctx.send(embed=embed)

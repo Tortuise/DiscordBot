@@ -13,7 +13,7 @@ bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 async def setup(bot):
     await bot.add_cog(help_cog(bot, prefix))
-    
+    await bot.add_cog(music_cog(bot))
 
 token = ""
 with open("token.txt") as f:
